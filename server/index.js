@@ -5,6 +5,7 @@ const { v4: uuid } = require('uuid');
 // console.log('uuid', uuid()); // uuid 35c68427-f597-42ae-b932-d4e5d3f2267d
 const mime = require('mime-types');
 const mongoose = require('mongoose');
+const Image = require('./models/Image');
 
 const storage = multer.diskStorage({
     destination: (req, file, cb) => cb(null, './uploads'),
@@ -32,8 +33,11 @@ mongoose
         console.log('mongoDB connected!');
         app.use('/uploads', express.static('uploads'));
 
-        app.post('/upload', upload.single('image'), (req, res) => {
-            console.log(req.file);
+        app.post('/upload', upload.single('image'), async (req, res) => {
+            await new Image({
+                key: req.file.filename,
+                originalFileName: req.file.originalname,
+            }).save();
             res.json(req.file);
         });
 
