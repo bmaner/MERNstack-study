@@ -49,18 +49,15 @@ userRouter.post('/login', async (req, res) => {
 
 userRouter.post('/logout', async (req, res) => {
     try {
-        const { sessionid } = req.headers;
-        if (!mongoose.isValidObjectId(sessionid))
-            throw new Error('invalid sessionid');
-        const user = await User.findOne({ 'sessio._id': sessionid });
-        console.log(user);
-        if (!user) throw new Error('invalid sessionid');
+        console.log(req.user);
+        if (!req.user) throw new Error('invalid sessionid');
         await User.updateOne(
-            { _id: user.id },
-            { $pull: { sessions: { _id: sessionid } } }
+            { _id: req.user.id },
+            { $pull: { sessions: { _id: req.headers.sessionid } } }
         );
         res.json({ message: 'user is logged out' });
     } catch (err) {
+        console.log(err);
         res.status(400).json({ message: err.message });
     }
 });
