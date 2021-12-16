@@ -5,11 +5,15 @@ const { hash, compare } = require('bcryptjs');
 const mongoose = require('mongoose');
 
 userRouter.post('/register', async (req, res) => {
+    console.log('여기까지 왔나', req.body);
     try {
         if (req.body.password.length < 8) {
+            console.log('여긴 아니제?');
             throw new Error('비밀번를 최소 8자 이상으로 해주세요.');
         }
         const hashedPassword = await hash(req.body.password, 10);
+        console.log(hashedPassword);
+        console.log('해시드 비밀번호까지 왓니');
         const user = await new User({
             name: req.body.name,
             username: req.body.username,
@@ -17,10 +21,12 @@ userRouter.post('/register', async (req, res) => {
             sessions: [{ createdAt: new Date() }],
         }).save();
         const session = user.sessions[0];
+        console.log('session._id', session._id);
         res.json({
             message: 'user registered',
             sessionsId: session._id,
             name: user.name,
+            userId: user.username,
         });
     } catch (err) {
         res.status(400).json({ message: err.message });
@@ -39,8 +45,9 @@ userRouter.post('/login', async (req, res) => {
         await user.save();
         res.json({
             message: 'user validated',
-            sessionId: session._id,
+            sessionsId: session._id,
             name: user.name,
+            userId: user.username,
         });
     } catch (err) {
         res.status(400).json({ message: err.message });
