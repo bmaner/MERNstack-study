@@ -69,4 +69,20 @@ userRouter.post('/logout', async (req, res) => {
     }
 });
 
+userRouter.get('/me', (req, res) => {
+    try {
+        console.log(req);
+        if (!req.user) throw new Error('권한이 없습니다.');
+        res.json({
+            message: 'success',
+            sessionsId: req.headers.sessionid,
+            name: req.user.name,
+            userId: req.user.username,
+        });
+    } catch (err) {
+        console.log(err);
+        res.status(400).json({ message: err.message });
+    }
+});
+
 module.exports = { userRouter };
