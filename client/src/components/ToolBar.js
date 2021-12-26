@@ -23,7 +23,10 @@ function ToolBar() {
                 <span>home</span>
             </Link>
             {me ? (
-                <span onClick={e => logoutHandler()} style={{ float: 'right' }}>
+                <span
+                    onClick={e => logoutHandler()}
+                    style={{ float: 'right', cursor: 'pointer' }}
+                >
                     로그아웃({me.name})
                 </span>
             ) : (
