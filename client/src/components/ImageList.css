@@ -1,0 +1,20 @@
+.image-list-container {
+    /* display: flex; */
+    /* flex-wrap: wrap; */
+    /* justify-content: center; */
+    gap: 12px;
+    display: grid;
+    grid-template-columns: repeat(4, 140px);
+}
+
+.image-list-container img {
+    width: 140px;
+    height: 140px;
+    object-fit: cover;
+}
+
+.image-list-container img:hover {
+    box-shadow: 4px 4px 4px rgba(0, 0, 0, 0.2);
+    opacity: 0.7;
+    cursor: pointer;
+}
