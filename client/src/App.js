@@ -6,6 +6,7 @@ import MainPage from './pages/MainPage';
 import RegisterPage from './pages/RegisterPage';
 import { Routes, Route } from 'react-router-dom';
 import ToolBar from './components/ToolBar';
+import ImagePage from './pages/ImagePage';
 
 function App() {
     return (
@@ -16,6 +17,7 @@ function App() {
                 <Route path="/" exact element={<MainPage />} />
                 <Route path="/auth/register" exact element={<RegisterPage />} />
                 <Route path="/auth/login" exact element={<LoginPage />} />
+                <Route path="/images/:imageId" exact element={<ImagePage />} />
             </Routes>
         </div>
     );
