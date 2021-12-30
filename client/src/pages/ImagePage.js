@@ -3,6 +3,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import { useParams } from 'react-router';
 import { AuthContext } from '../context/AuthContext';
 import { ImageContext } from '../context/ImageContext';
+import { toast } from 'react-toastify';
 
 function ImagePage() {
     const { imageId } = useParams();
@@ -35,6 +36,22 @@ function ImagePage() {
         setHasLiked(!hasLiked);
     }
 
+    const deleteImage = images => {
+        return images.filter(image => image._id !== imageId);
+    };
+
+    const deleteHandler = async () => {
+        try {
+            if (!window.confirm('정말 해당 이미지를 삭제하시겠습니까?')) return;
+            const result = await axios.delete(`/images/${imageId}`);
+            toast.success(result.data.message);
+            setImages(deleteImage(images));
+            setMyImages(deleteImage(myImages));
+        } catch (err) {
+            toast.error(err.message);
+        }
+    };
+
     return (
         <div>
             <h3>Image Page - {imageId}</h3>
@@ -44,6 +61,14 @@ function ImagePage() {
                 src={`http://localhost:5000/uploads/${image.key}`}
             />
             <span>좋아요{image.likes.length}</span>
+            {me && image.user._id === me.userId && (
+                <button
+                    style={{ float: 'right', marginRight: 10 }}
+                    onClick={deleteHandler}
+                >
+                    삭제
+                </button>
+            )}
             <button style={{ float: 'right' }} onClick={onSubmit}>
                 {hasLiked ? '좋아요 취소' : '좋아요'}
             </button>
