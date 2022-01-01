@@ -16,7 +16,7 @@ const upload = multer({
             cb(new Error('invalid file type.'), false);
         }
     },
-    limits: { fileSize: 1024 * 1024 * 5 }, // 파일 크기 제한
+    limits: { fileSize: 1024 * 1024 * 50 }, // 파일 크기 제한
 });
 
 module.exports = { upload };
