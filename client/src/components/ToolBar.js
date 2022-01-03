@@ -12,6 +12,7 @@ function ToolBar() {
             await axios.post('/users/logout');
             setMe();
             toast.success('로그아웃!');
+            localStorage.removeItem('sessionId');
         } catch (err) {
             console.error(err);
             toast.error(err.message);
