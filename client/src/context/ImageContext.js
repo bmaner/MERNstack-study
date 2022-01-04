@@ -10,7 +10,7 @@ export function ImageProvider(prop) {
     const [me] = useContext(AuthContext);
     useEffect(() => {
         axios
-            .get('/images')
+            .get('/images?page=2')
             .then(result => setImages(result.data))
             .catch(err => console.error(err));
     }, []);

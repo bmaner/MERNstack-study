@@ -8,7 +8,7 @@ const mongoose = require('mongoose');
 
 const fileUnlink = promisify(fs.unlink);
 
-imageRouter.post('/', upload.array('image', 5), async (req, res) => {
+imageRouter.post('/', upload.array('image', 30), async (req, res) => {
     // 유저 정보, public 유무 확인
     try {
         if (!req.user) throw new Error('권한이 없습니다.');
@@ -35,11 +35,28 @@ imageRouter.post('/', upload.array('image', 5), async (req, res) => {
     }
 });
 imageRouter.get('/', async (req, res) => {
-    // public 이미지만 제공
-    const images = await Image.find({ public: true });
-    // const images = await Image.find({ public: true });
-    // 위 find()안에는 3개의 컬리브라켓({})이 들어갈 수 있다. 첫번째는 탐색, 두번째는 수정할 것, 세번째는 옵션
-    res.json(images);
+    try {
+        const { lastId } = req.query;
+        if (lastId && !mongoose.isValidObjectId(lastId))
+            throw new Error('invalid lastid');
+        // public 이미지만 제공
+        const images = await Image.find(
+            lastId
+                ? {
+                      public: true,
+                      _id: { $lt: lastId },
+                  }
+                : { public: true }
+        )
+            .sort({ _id: -1 })
+            .limit(10);
+        // const images = await Image.find({ public: true });
+        // 위 find()안에는 3개의 컬리브라켓({})이 들어갈 수 있다. 첫번째는 탐색, 두번째는 수정할 것, 세번째는 옵션
+        res.json(images);
+    } catch (err) {
+        console.log(err);
+        res.status(400).json({ message: err.message });
+    }
 });
 
 imageRouter.delete('/:imageId', async (req, res) => {
