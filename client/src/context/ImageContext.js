@@ -7,13 +7,23 @@ export function ImageProvider(prop) {
     const [images, setImages] = useState([]);
     const [myImages, setMyImages] = useState([]);
     const [isPublic, setIsPublic] = useState(true);
+    const [imageUrl, setImageUrl] = useState('/images');
+    const [imageLoading, setImageLoading] = useState(false);
+    const [imageError, setImageError] = useState(false);
     const [me] = useContext(AuthContext);
     useEffect(() => {
+        setImageLoading(true);
         axios
-            .get('/images?page=2')
-            .then(result => setImages(result.data))
-            .catch(err => console.error(err));
-    }, []);
+            .get(imageUrl)
+            .then(
+                result => setImages(prevData => [...prevData, ...result.data]) //([...images, ...result.datas]) -> missing dependency가 뜬다.
+            )
+            .catch(err => {
+                console.error(err);
+                setImageError(err);
+            })
+            .finally(() => setImageLoading(false));
+    }, [imageUrl]);
     useEffect(() => {
         if (me) {
             setTimeout(() => {
@@ -27,6 +37,12 @@ export function ImageProvider(prop) {
             setIsPublic(true);
         }
     }, [me]);
+
+    const loadMoreImages = () => {
+        if (images.length === 0 || imageLoading) return;
+        const lastImageId = images[images.length - 1]._id;
+        setImageUrl(`/images?lastId=${lastImageId}`);
+    };
     return (
         <ImageContext.Provider
             value={{
@@ -36,6 +52,9 @@ export function ImageProvider(prop) {
                 setMyImages,
                 isPublic,
                 setIsPublic,
+                loadMoreImages,
+                imageLoading,
+                imageError,
             }}
         >
             {prop.children}

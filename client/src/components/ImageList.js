@@ -5,8 +5,15 @@ import { ImageContext } from '../context/ImageContext';
 import './ImageList.css';
 
 function ImageList() {
-    const { images, myImages, isPublic, setIsPublic } =
-        useContext(ImageContext);
+    const {
+        images,
+        myImages,
+        isPublic,
+        setIsPublic,
+        loadMoreImages,
+        imageLoading,
+        imageError,
+    } = useContext(ImageContext);
     const [me] = useContext(AuthContext);
     const imgList = (isPublic ? images : myImages).map(image => (
         <Link key={image.key} to={`/images/${image._id}`}>
@@ -24,6 +31,12 @@ function ImageList() {
                 </button>
             )}
             <div className="image-list-container">{imgList}</div>
+            {imageError && <div>Error...</div>}
+            {imageLoading ? (
+                <div>Loading...</div>
+            ) : (
+                <button onClick={loadMoreImages}>Load More Images</button>
+            )}
         </div>
     );
 }
