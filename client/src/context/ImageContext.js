@@ -1,4 +1,10 @@
-import React, { createContext, useState, useEffect, useContext } from 'react';
+import React, {
+    createContext,
+    useState,
+    useEffect,
+    useContext,
+    useCallback,
+} from 'react';
 import axios from 'axios';
 import { AuthContext } from './AuthContext';
 export const ImageContext = createContext();
@@ -38,11 +44,13 @@ export function ImageProvider(prop) {
         }
     }, [me]);
 
-    const loadMoreImages = () => {
-        if (images.length === 0 || imageLoading) return;
-        const lastImageId = images[images.length - 1]._id;
+    const lastImageId =
+        images.length > 0 ? images[images.length - 1]._id : null;
+
+    const loadMoreImages = useCallback(() => {
+        if (imageLoading || !lastImageId) return;
         setImageUrl(`/images?lastId=${lastImageId}`);
-    };
+    }, [lastImageId, imageLoading]); //dependency에는 객체나 배열을 넣어주기보다 boolean값을 넣어주는 것이 좋다.
     return (
         <ImageContext.Provider
             value={{
