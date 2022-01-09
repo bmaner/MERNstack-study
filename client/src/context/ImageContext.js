@@ -3,7 +3,7 @@ import React, {
     useState,
     useEffect,
     useContext,
-    useCallback,
+    useRef,
 } from 'react';
 import axios from 'axios';
 import { AuthContext } from './AuthContext';
@@ -17,19 +17,27 @@ export function ImageProvider(prop) {
     const [imageLoading, setImageLoading] = useState(false);
     const [imageError, setImageError] = useState(false);
     const [me] = useContext(AuthContext);
+    const pastImageUrlRef = useRef();
     useEffect(() => {
+        if (pastImageUrlRef.current === imageUrl) return;
         setImageLoading(true);
         axios
             .get(imageUrl)
             .then(
-                result => setImages(prevData => [...prevData, ...result.data]) //([...images, ...result.datas]) -> missing dependency가 뜬다.
+                result =>
+                    isPublic
+                        ? setImages(prevData => [...prevData, ...result.data])
+                        : setMyImages(prevData => [...prevData, ...result.data]) //([...images, ...result.datas]) -> missing dependency가 뜬다.
             )
             .catch(err => {
                 console.error(err);
                 setImageError(err);
             })
-            .finally(() => setImageLoading(false));
-    }, [imageUrl]);
+            .finally(() => {
+                setImageLoading(false);
+                pastImageUrlRef.current = imageUrl;
+            });
+    }, [imageUrl, isPublic]);
     useEffect(() => {
         if (me) {
             setTimeout(() => {
@@ -44,25 +52,16 @@ export function ImageProvider(prop) {
         }
     }, [me]);
 
-    const lastImageId =
-        images.length > 0 ? images[images.length - 1]._id : null;
-
-    const loadMoreImages = useCallback(() => {
-        if (imageLoading || !lastImageId) return;
-        setImageUrl(`/images?lastId=${lastImageId}`);
-    }, [lastImageId, imageLoading]); //dependency에는 객체나 배열을 넣어주기보다 boolean값을 넣어주는 것이 좋다.
     return (
         <ImageContext.Provider
             value={{
-                images,
-                setImages,
-                myImages,
-                setMyImages,
+                images: isPublic ? images : myImages,
+                setImages: isPublic ? setImages : setMyImages,
                 isPublic,
                 setIsPublic,
-                loadMoreImages,
                 imageLoading,
                 imageError,
+                setImageUrl,
             }}
         >
             {prop.children}
