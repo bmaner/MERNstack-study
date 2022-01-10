@@ -7,13 +7,10 @@ import { toast } from 'react-toastify';
 
 function ImagePage() {
     const { imageId } = useParams();
-    const { images, myImages, setImages, setMyImages } =
-        useContext(ImageContext);
+    const { images, setImages, setMyImages } = useContext(ImageContext);
     const [me] = useContext(AuthContext);
     const [hasLiked, setHasLiked] = useState(false);
-    const image =
-        images.find(image => image._id === imageId) ||
-        myImages.find(image => image._id === imageId);
+    const image = images.find(image => image._id === imageId);
     useEffect(() => {
         if (me && image && image.likes.includes(me.userId)) setHasLiked(true);
     }, [me, image]);
@@ -31,8 +28,9 @@ function ImagePage() {
         const result = await axios.patch(
             `/images/${imageId}/${hasLiked ? 'unlike' : 'like'}`
         );
-        if (result.data.public) setImages(updateImage(images, result.data));
-        else setMyImages(updateImage(myImages, result.data));
+        if (result.data.public)
+            setImages(prevData => updateImage(prevData, result.data));
+        setMyImages(prevData => updateImage(prevData, result.data));
         setHasLiked(!hasLiked);
     }
 
@@ -45,8 +43,12 @@ function ImagePage() {
             if (!window.confirm('정말 해당 이미지를 삭제하시겠습니까?')) return;
             const result = await axios.delete(`/images/${imageId}`);
             toast.success(result.data.message);
-            setImages(deleteImage(images));
-            setMyImages(deleteImage(myImages));
+            setImages(prevData =>
+                prevData.filter(image => image._id !== imageId)
+            );
+            setMyImages(prevData =>
+                prevData.filter(image => image._id !== imageId)
+            );
         } catch (err) {
             toast.error(err.message);
         }
