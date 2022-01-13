@@ -1,5 +1,5 @@
 import axios from 'axios';
-import React, { useContext, useEffect, useState, useRef } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { useParams } from 'react-router';
 import { AuthContext } from '../context/AuthContext';
 import { ImageContext } from '../context/ImageContext';
@@ -12,28 +12,25 @@ function ImagePage() {
     const [hasLiked, setHasLiked] = useState(false);
     const [image, setImage] = useState();
     const [error, setError] = useState(false);
-    const imageRef = useRef();
 
     useEffect(() => {
-        imageRef.current = images.find(image => image._id === imageId);
+        const img = images.find(image => image._id === imageId);
+        if (img) setImage(img);
     }, [images, imageId]);
 
     useEffect(() => {
-        if (imageRef.current) setImage(imageRef.current);
-        // 현재 이미지 페이지네이션을 사용하고있고, images 배열에서 선택한 이미지의 아디로 검색을 해서 사진을 나타내는데 새로고침을하면 첫번째 페이지에 나타나는 사진의 경우에는 나타남 but 그 이후의 페이지에 속하는 경우에는 나타나지 않음
-        // 배열에 이미지가 존재할 때
-        else
-            axios
-                .get(`/images/${imageId}`)
-                .then(({ data }) => {
-                    setError(false);
-                    setImage(data);
-                })
-                .catch(err => {
-                    setError(true);
-                    toast.error(err.response.data.message);
-                });
-    }, [imageId]);
+        if (image && image._id === imageId) return;
+        axios
+            .get(`/images/${imageId}`)
+            .then(({ data }) => {
+                setError(false);
+                setImage(data);
+            })
+            .catch(err => {
+                setError(true);
+                toast.error(err.response.data.message);
+            });
+    }, [imageId, image]);
 
     useEffect(() => {
         if (me && image && image.likes.includes(me.userId)) setHasLiked(true);
@@ -43,9 +40,10 @@ function ImagePage() {
 
     function updateImage(images, image) {
         return [...images.filter(image => image._id !== imageId), image].sort(
-            (a, b) =>
-                new Date(a.createdAt).getTime() -
-                new Date(b.createdAt).getTime()
+            (a, b) => {
+                if (b._id > a._id) return 1;
+                else return -1;
+            }
         );
     }
 
